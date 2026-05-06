@@ -1,0 +1,198 @@
+You are generating scene captions for CompoSET, a compositional
+vision-language benchmark. Each scene will later be used to produce
+single-edit variation pairs, so the caption must be rich in swappable
+attributes. Follow the structure and constraints below.
+
+---
+SCENE PARAMETERS
+
+setting:  {setting}
+subjects: {subjects}
+framing:  {framing}
+
+Adapt the caption to match these parameters. With 0 subjects, omit
+human-related constraints (garment color, action). With 2+ subjects,
+mention all subjects in the base caption, each distinguishable by at
+least one attribute (e.g. garment color, accessory). Encourage
+interactions between subjects to enable swap_role edits, but
+independent co-presence is also fine. Close-up framing should focus on
+a smaller set of objects with finer attribute detail; full shot may
+include more spatial context.
+
+---
+OUTPUT FORMAT
+
+base_caption: "..."
+detail_sentences:
+  [region]: "..."
+  [region]: "..."
+  ...
+
+No commentary.
+
+---
+STRUCTURE
+
+Base caption (one sentence, ~15-25 words): a natural, MSCOCO-register
+description of the main scene. Keep it concise — mention the setting,
+the main subject(s), and a few key objects with one or two attributes
+each (e.g. garment color, material, action). For multi-person scenes,
+describe one person with attributes in the base and summarize the
+others briefly (e.g. "with two other people working alongside"); save
+their detailed descriptions for a detail sentence. Do NOT cram all
+details into the base — aim for balance between base and detail
+sentence lengths. No directional spatial cues, setting context should
+be high-level only (e.g. "in a cafe", "in a garden"). Slightly vary
+the sentence structure across scenes. Objects include animals — they
+can interact with subjects or other objects via pose, action, or
+spatial relations.
+
+Detail sentences (2-4, each covering a distinct scene region): each
+independently removable. Every named object carries at least one
+attribute swappable along a taxonomy axis (see below). Use explicit
+quantifiers ("a", "two", "three") wherever countable. Name functional
+states when visible (e.g. "half-full", "open", "folded", "stacked").
+
+---
+TAXONOMY AXES
+
+The full caption (base + details) should collectively offer footholds
+for as many of the following edit categories as possible:
+
+Appearance:
+(note: randomly pick amongst suggestions)
+  color              — named color on at least two objects,
+                       e.g. red, blue, green, yellow, black, white, brown,
+                       orange, gray, pink, purple, beige, silver, gold, copper,
+                       teal, coral. 
+  material           — e.g. wood, metal, glass, ceramic, fabric, plastic,
+                       leather, stone, wicker, rubber, paper, cardboard,
+                       marble, concrete, bamboo, cork, silicone, fur, ice
+  pattern            — e.g. solid, striped, checkered, plaid, floral,
+                       polka-dot, herringbone, paisley, leopard
+  shape              — e.g. round, square, rectangular, oval, triangular,
+                       cylindrical, hexagonal, star-shaped
+  transparency       — opaque, translucent, transparent
+
+Quantity:
+  cardinality        — explicit counts ("two", "three", "four")
+  presence           — an object named with "a" or a count, whose
+                       removal would be unambiguous
+
+Spatial:
+  spatial relation   — directional relation between two movable objects
+                       (left/right, above/below, in front of/behind,
+                       on top of/underneath, inside/outside)
+
+State:
+  functional state   — open/closed, tied/untied, zipped/unzipped,
+                       lit/unlit, inflated/deflated, corked/uncorked,
+                       capped/uncapped, plugged in/unplugged,
+                       rolled up/unrolled, stacked/unstacked,
+                       hung/draped, wet/dry, torn/intact,
+                       peeled/unpeeled, wilted/fresh, wrinkled/smooth,
+                       empty/full, whole/sliced,
+                       folded/crumpled/rolled/spread flat
+
+Action & Pose:
+  action             — what the subject is doing,
+                       e.g (but not limited to)reading, writing, typing,
+                       pouring, cutting, stirring, holding, pointing,
+                       painting, sewing, sweeping, watering, arranging,
+                       folding, peeling, stacking, photographing, measuring,
+                       brushing, sharpening, wrapping, sipping, wiping
+  pose               — body or object orientation,
+                       e.g (but not limited to) sitting/standing,
+                       crouching/kneeling, leaning/upright, facing
+                       left/facing right, upright/upside-down, lying
+                       flat/propped up, arms crossed/arms at sides,
+                       hand raised/hand lowered, legs crossed/legs
+                       uncrossed, hunched over/sitting upright, head
+                       tilted/head straight, looking down/looking up,
+                       bent over/standing straight
+ 
+Object:
+  object identity    — objects with visually distinct same-role,
+                       alternatives, e.g. (but not limited to)
+                       newspaper/book/magazine, knife/spoon/fork,
+                       chair/stool/bench, cup/mug/glass, pen/pencil/marker,
+                       lamp/candle/lantern, plate/tray/bowl/pot/pan,
+                       bottle/jar/jug, bag/basket/box, scarf/bandana,
+                       hat/cap/beanie, jacket/vest/cardigan/sweater,
+                       apple/orange/pear/lemon/lime, notebook/sketchpad/tablet,
+                       backpack/tote bag/satchel, scissors/utility knife,
+                       broom/mop/dustpan, pitcher/teapot/kettle, napkin/towel/cloth,
+                       clock/watch/timer, cushion/pillow/blanket, spoon/ladle/whisk
+
+---
+HARD CONSTRAINTS
+
+Scene composition (when subjects >= 1): across base + details combined,
+include at least one human subject with a named garment color and
+action/pose, one surface with 3+ attributed objects, and one background
+element. The base caption should stay brief — most attributed objects
+belong in detail sentences. When subjects = 0, centre the base caption
+on a simple object arrangement (e.g. "A blue mug sits on top of a
+notebook on a desk") with additional attributed objects in detail
+sentences.
+
+Spatial relations: only target movable objects (tableware, bags, books,
+tools, garments, food, small furniture). Fixed architectural elements
+(windows, walls, doors, built-in shelves, columns) may appear in detail
+sentences but without directional placement — their position is not
+foilable. Write "There is a large window." -- not "There is a large
+window on the right wall."
+
+Spatial language: use viewer-relative or absolute terms ("on the left
+side", "the leftmost", "on the right side of the table"), never
+subject-relative terms ("to her right", "to his left"), ordinals
+("the first", "the second"), or vague proximity ("near", "next to",
+"by").
+
+Excluded language: age descriptors, gender beyond visual necessity,
+emotion, absolute size, aesthetic/mood language ("warm", "cozy",
+"elegant"), scene-level properties (weather, lighting, season,
+indoor/outdoor framing). Never use "half-full" or "half-empty" —
+use "full" or "empty" instead, as partial-fill states are ambiguous
+in images.
+
+Attribute density: aim for at least two distinct taxonomy axes per
+detail sentence. Prefer concrete, swappable attributes over generic
+descriptions. Stack attributes on objects — e.g. "a closed red
+leather notebook" (state + color + material) is better than
+"a notebook."
+
+Self-contained sentences: each object's swappable attributes should
+be fully described in the same sentence where the object is first
+named. Do not split an object's attributes across sentences — e.g.
+do not name "a metal tin" in the base caption and then describe its
+color in a detail sentence. This ensures each variation edit targets
+exactly one sentence.
+
+---
+EXAMPLE
+
+base_caption: "A person in a red coat is reading a newspaper at a wooden
+table in a cafe, with a cup and a notebook on the table."
+detail_sentences:
+  surface: "There are black plastic glasses, a full glass of water, and
+  an empty brown coffee cup on the table."
+  furniture: "A leather purse is on a wooden chair on the left side."
+  background: "There is a large window and wooden bookshelves on the
+  back wall."
+
+Why this works:
+- Base caption captures the main scene: subject, action, primary
+  surface, and a key spatial cue — the core of what's happening.
+- Detail sentences layer in secondary objects, furniture, and
+  background elements, each carrying multiple swappable attributes
+  (color, material, state, cardinality).
+- Together, base + details cover many taxonomy axes without
+  concentrating all attributes in one place.
+- Fixed elements (window, bookshelves, wall) appear only in background
+  detail, never as spatial-relation targets.
+
+---
+Generate one scene caption following the format above. Maximise coverage
+across taxonomy axes so downstream variation generation can produce
+edits in every category.

@@ -1,0 +1,249 @@
+You are generating single-edit variations for CompoSET, a compositional 
+vision-language benchmark. You will be given a scene consisting of a base 
+caption and detail sentences. Generate one variation per edit, following 
+the structure and constraints below.
+
+---
+INPUT FORMAT
+
+base_caption: "..."
+detail_sentences:
+  [region]: "..."
+  [region]: "..."
+  ...
+
+---
+OUTPUT FORMAT
+
+For each variation output:
+
+id: [scene_id]_v[NN]
+edit_type: [see taxonomy below]
+source: base_caption | [detail sentence key]
+edits:
+  target_object: "..."
+  attribute: "..."
+  from: "..."
+  to: "..."
+clause: "..."    ← only when source is a detail sentence key; the minimal
+                    phrase from that sentence containing the edited attribute
+level_0:
+  positive: "..."
+  negative: "..."
+
+---
+FIELD NOTES
+
+source: the key of the sentence where the edited attribute appears.
+  Use "base_caption" if the edit target is named in the base caption.
+  Use the exact detail sentence key (e.g. "surface", "background") otherwise.
+
+clause: required only when source is a detail sentence key. Write the
+  minimal phrase from that sentence that names the edited attribute —
+  the shortest self-contained fragment that identifies the object and its
+  state. Do not copy the whole sentence.
+  Example: "the metal tin lid is in the open position"
+
+level_0 — minimal noun phrase: contains only the edited attribute and
+  its anchor object. No sentence structure. Examples: "a red coat",
+  "a fork and knife next to a bowl", "a full cup".
+  For modify_pose edits, include the object's location so the edited
+  image preserves placement (e.g. "an upright backpack on the booth
+  seat" / "a backpack laying flat on the booth seat").
+
+---
+TAXONOMY
+
+Generate at least one variation from every category below that the scene
+can support before generating a second variation in any category:
+
+Appearance:
+  modify_color       — change the color of one object
+                       (red, blue, green, yellow, black, white, brown,
+                       orange, gray, pink, purple, beige, silver, gold,
+                       copper, teal)
+  modify_material    — change the material of one object (wood/metal/glass/
+                       ceramic/fabric/plastic/leather/stone/wicker/rubber/
+                       paper/cardboard/marble/concrete/bamboo/cork/
+                       silicone/fur/ice).
+                       Pick objects where the material change is visually
+                       obvious — avoid subtle pairs on small objects
+                       (e.g. ceramic plate vs metal plate is hard to see;
+                       prefer wooden table vs metal table)
+  modify_pattern     — change surface pattern (solid/striped/checkered/plaid/
+                       floral/polka-dot/herringbone/paisley/leopard).
+                       The positive must explicitly say "solid" when the
+                       original has no pattern (e.g. positive:
+                       "a solid green bib", negative: "a striped green bib")
+  modify_shape       — change shape within same object category
+                       (round/square/rectangular/oval/triangular/
+                       cylindrical/hexagonal/star-shaped)
+  modify_transparency — change transparency (opaque/translucent/transparent).
+                       The positive must explicitly say "transparent" when the
+                       original is see-through (e.g. positive: "a transparent
+                       glass vase", negative: "an opaque ceramic vase")
+  swap_color         — exchange colors between two objects in the scene
+
+Quantity:
+  modify_cardinality — change the count of an object (one/two/three)
+  modify_presence    — remove an object entirely (generate at least 2
+                       per scene; see design note below)
+
+Spatial:
+  modify_spatial     — change the spatial relation of ONE movable object
+                       (or one group moved together) relative to an anchor
+                       that stays fixed (left/right, above/below, in/on/
+                       under, in front of/behind, on top of/underneath,
+                       inside/outside). Example: "a mug on the left side
+                       of the board" → "a mug on the right side of the
+                       board".
+  swap_spatial       — exchange the positions of TWO named objects in the
+                       scene. Both objects must be named with distinct
+                       attributes so the binding is unambiguous. Example:
+                       "a pot on the left and a tin on the right" →
+                       "a pot on the right and a tin on the left".
+
+State:
+  modify_state       — change functional or physical state. Examples (not limited to):
+                       open/closed, tied/untied, zipped/unzipped,
+                       lit/unlit, inflated/deflated, corked/uncorked,
+                       capped/uncapped, plugged in/unplugged,
+                       rolled up/unrolled, stacked/unstacked,
+                       hung/draped, wet/dry, torn/intact,
+                       peeled/unpeeled, wilted/fresh, wrinkled/smooth,
+                       empty/full, whole/sliced,
+                       folded/crumpled/rolled/spread flat.
+                       Prefer vivid state words — "crumpled" over
+                       "unfolded", "shattered" over "not intact".
+                       When changing full/empty on a container with
+                       named contents, omit the contents from both
+                       level_0 captions (e.g. "a full glass" /
+                       "an empty glass", not "a full glass of orange
+                       juice" / "an empty glass of orange juice")
+
+Action & Pose:
+  modify_action      — change what the subject is doing (reading/writing/
+                       typing/pouring/cutting/stirring/holding/pointing/
+                       painting/sewing/sweeping/watering/arranging/
+                       folding/peeling/stacking/photographing/measuring/
+                       brushing/sharpening/wrapping/sipping/wiping)
+  modify_pose        — change body or object configuration (sitting/
+                       standing, crouching/kneeling, leaning/upright,
+                       facing left/facing right, upright/upside-down,
+                       lying flat/propped up, arms crossed/arms at sides,
+                       hand raised/hand lowered, legs crossed/legs
+                       uncrossed, hunched over/sitting upright, head
+                       tilted/head straight, looking down/looking up,
+                       bent over/standing straight). For human subjects,
+                       go beyond sitting/standing/laying — include limb,
+                       arm, and head pose variations. Applies to objects
+                       as well as agents — do not skip this type simply
+                       because the scene has no people.
+  swap_role          — exchange who does what to whom between two agents
+
+Object:
+  modify_object      — replace an object with a visually distinct same-role
+                       alternative (newspaper/book/magazine, knife/spoon/
+                       fork, chair/stool/bench, cup/mug/bowl, pen/pencil/
+                       marker, lamp/candle/lantern, plate/tray/platter,
+                       bottle/jar/jug, bag/basket/box, purse/backpack)
+
+---
+HARD CONSTRAINTS
+
+Visually distinct: the from/to values must be clearly distinguishable in a
+photograph. Avoid near-synonym pairs like cotton/linen, cream/white,
+rectangular/square, ceramic/porcelain, beige/tan. Pick values with obvious
+visual contrast.
+
+Substitutive only: every positive/negative pair must be mutually exclusive
+and equally dense. The negative must not be a valid description of the 
+positive image under any interpretation. Never create a negative by omission 
+("a car" vs "a red car") — always swap explicitly ("a red car" vs "a blue car").
+
+One edit per variation: positive and negative must differ in exactly one
+attribute. Do not introduce secondary changes to improve naturalness.
+
+Single-sentence scope: the edited attribute must be fully contained
+within one sentence of the caption — either the base_caption or one
+detail sentence. Do not create a variation whose target object or
+attribute is described across two sentences (e.g. an object named in
+the base_caption but whose color is only mentioned in a detail
+sentence). If an object's attributes are split across sentences,
+only edit attributes mentioned in the same sentence as the object
+name, or skip that edit entirely.
+
+Spatial edits: only target movable objects. Never write a spatial variation 
+that would require repositioning a fixed architectural element (window, wall, 
+built-in shelf, door).
+
+modify_presence design note: generate at least 2 per scene. Pick objects
+that are visually distinct, not the main subject, and from different
+sentences when possible. The L0 negative should use "no [object]" phrasing.
+Only target objects whose presence is unambiguous in the caption (i.e.
+explicitly named with "a" or a count). Do not generate presence variations
+for objects mentioned in vague or collective constructions.
+
+Do not generate variations for fixed scene elements (windows, walls, 
+background architecture) along any axis.
+
+Do not use ordinal position ("first", "second") — use directional spatial 
+language ("leftmost", "on the left side").
+
+---
+EXAMPLE (partial)
+
+Input:
+base_caption: "A woman in a red coat is reading a newspaper at a wooden 
+table in a cafe, with a cup and a notebook in front of her."
+detail_sentences:
+  surface: "There are black plastic glasses, a full glass of water, and a 
+  full brown coffee cup on the table."
+  furniture: "A leather purse is on a wooden chair to her left."
+  background: "There is a large window on the right wall and wooden 
+  bookshelves on the back wall."
+
+Output (two variations shown):
+
+id: s001_v01
+edit_type: modify_color
+source: base_caption
+edits:
+  target_object: coat
+  attribute: color
+  from: red
+  to: blue
+level_0:
+  positive: "a red coat"
+  negative: "a blue coat"
+
+id: s001_v02
+edit_type: modify_state
+source: surface
+clause: "a full brown coffee cup on the table"
+edits:
+  target_object: coffee cup
+  attribute: state
+  from: full
+  to: empty
+level_0:
+  positive: "a full coffee cup"
+  negative: "an empty coffee cup"
+
+---
+Generate all valid variations for the scene provided. Output only the
+variation blocks (id / edit_type / source / edits / level_0). No preamble,
+no scene inventory, no section headers, no commentary, no summary.
+
+First pass — generate exactly one variation per edit_type that the scene
+can support, working through every type in the taxonomy before repeating
+any. Within Appearance, cover pattern, shape, and transparency before
+adding a second color or material variation. For spatial, state, pose,
+action, and role edits, generate one if a clean foil exists before
+adding any second Appearance variation.
+
+Second pass — once every applicable edit_type has at least one variation,
+add further variations leaning into what the scene naturally supports.
+
+Skip any edit_type for which no clean substitutive foil exists in the
+scene.

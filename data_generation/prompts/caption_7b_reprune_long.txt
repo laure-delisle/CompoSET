@@ -1,0 +1,70 @@
+You are re-pruning LONG captions for CompoSET that need refinement.
+
+Each item has been flagged for one of two reasons:
+- "hard_over": current long caption exceeds 49 words (CLIP's 77-token safety cap). Needs aggressive pruning.
+- "drift": current long base and long var have diverged in sentence structure (different templates), when they should share a common skeleton.
+
+Your job: produce revised long_base / long_var that fix the flagged issue while preserving every other CompoSET rule.
+
+---
+RULES YOU MUST STILL FOLLOW
+
+1. SWAP PURITY: the ONLY token-level differences between base and var are the edit attributes themselves. Never introduce incidental word changes (verb tense, article, preposition, synonym) outside the edit.
+
+2. EDIT DIFF IS AUTHORITATIVE: diff l0_positive vs l0_negative. Every content word that differs in L0 must differ between your new long_base and long_var. Every object named in L0 must appear in both long_base and long_var (for swap/spatial edits).
+
+3. PRESERVE INSTANCE SELECTORS from L0 ("leftmost", "middle", "the one with …") in both base and var.
+
+4. NO GENDERED WORDS ("man", "woman", "boy", "girl"). Use "a person" or "the person".
+
+5. NO REPEATED CONSECUTIVE WORDS ("two two", "the the"). No typos.
+
+---
+HARD_OVER TREATMENT
+
+When "reason" contains "hard_over":
+- Hard cap: ≤40 words (soft goal) but MUST be ≤49 words.
+- PRUNE aggressively on UNCHANGED scene elements. Strip decorative descriptors on objects NOT affected by the edit.
+  - "a rectangular black leather folder" → "a folder" (if folder isn't the edit)
+  - "a small round ceramic pin dish full of pins" → "a pin dish" (if not edited)
+  - Outfit/clothing descriptors on persons who are NOT the edit subject → keep at most color-and-garment ("a pink blouse", "a lavender smock"); drop patterns, materials, accessories.
+- If the source sentence is a compound with multiple clauses and only ONE clause contains the edit, DROP the other clauses entirely if needed to fit the budget.
+- NEVER prune descriptors on the EDITED object; it must keep its identifying attributes.
+
+---
+DRIFT TREATMENT
+
+When "reason" contains "drift":
+- Rewrite base and var so they share the SAME sentence skeleton (subject/verb/modifier positions), differing only in the edit tokens.
+- If the current base and var use different sentence openers ("On the desk…" vs "A … on the desk"), pick one and use it for both.
+- For modify_cardinality edits where the count changes: both base and var should use the same lead phrase; only the count word(s) and necessary agreement (is/are, a/one/two) change.
+  - BAD:  base "Three coconut shells are arranged in a row behind the tin, the leftmost full of sand and the other two empty." / var "Two coconut shells are arranged in a row behind the tin."  (var completely restructured)
+  - GOOD: base "Three coconut shells are arranged in a row behind the tin." / var "Two coconut shells are arranged in a row behind the tin."
+- For modify_action/modify_pose where one version has more descriptive content than the other (e.g., base lists body-part positions, var drops them), keep the SAME structure and only swap the action verb.
+
+---
+INPUT
+
+You will receive a JSON array. Each element has:
+{
+  "id": "sXXX_vYY",
+  "reason": "hard_over" | "drift",
+  "edit_types": [...],
+  "l0_positive": "...",
+  "l0_negative": "...",
+  "source_sentence": "...",
+  "current_long_base": "...",
+  "current_long_var": "..."
+}
+
+---
+OUTPUT FORMAT
+
+Return a JSON array. Each element has exactly:
+{
+  "id": "sXXX_vYY",
+  "long_base": "...",
+  "long_var": "..."
+}
+
+Output only the JSON array. No preamble, no commentary, no markdown fences.

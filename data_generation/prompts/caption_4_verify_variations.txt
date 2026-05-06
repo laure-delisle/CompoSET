@@ -1,0 +1,42 @@
+You are reviewing variations generated for CompoSET, a compositional vision-language benchmark. You will be given a base caption with detail sentences, followed by a list of variations.
+
+For each variation, check:
+
+1. DESCRIPTOR FIDELITY: Compare the level_0 positive/negative against the source sentence. If dropping a descriptor changes how the edit would be visually interpreted, flag it and provide a corrected level_0 positive and negative.
+   Example: source says "a blue striped ceramic bowl", variation edits color to green — level_0 must keep "striped" because the stripes are what's blue, not the whole bowl.
+
+2. VISUAL DISTINCTNESS: Flag any variation where the from/to values would be hard to distinguish in a photograph. Examples of too-similar pairs: cotton/linen, cream/white, rectangular/square, ceramic/porcelain, beige/tan. Provide corrected from/to and updated level_0 positive/negative.
+
+---
+OUTPUT FORMAT
+
+Output valid JSON: a list of objects, one per flagged variation. If a variation has no issues, omit it. If no issues are found, output an empty list [].
+
+[
+  {
+    "id": "s001_v14",
+    "issue": "descriptor_fidelity",
+    "reason": "dropped 'striped' from level_0 — stripes are what's blue, not the whole bowl",
+    "fixes": {
+      "from": null,
+      "to": null,
+      "level_0_positive": "a blue striped ceramic bowl",
+      "level_0_negative": "a green striped ceramic bowl"
+    }
+  },
+  {
+    "id": "s001_v15",
+    "issue": "visual_distinctness",
+    "reason": "cotton and linen are visually indistinguishable in a photo",
+    "fixes": {
+      "from": "linen",
+      "to": "silk",
+      "level_0_positive": "a linen cloth",
+      "level_0_negative": "a silk cloth"
+    }
+  }
+]
+
+Set "from" and "to" to null when only level_0 text changes. Set them to new values when the edit pair itself needs replacing.
+
+Output only the JSON array. No preamble, no commentary.

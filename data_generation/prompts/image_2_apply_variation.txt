@@ -1,0 +1,7 @@
+Instruction: Modify the provided image ONLY to reflect the visual change required by the Target Variation Caption. Maintain 100% identity for the background, lighting, camera angle, and all objects not explicitly mentioned for change. The output must be indistinguishable from the original in style, composition, and texture, ensuring the only difference is the specific element required to match the Target Variation Caption. Keep all other items unchanged with the same pose and location — if a spatial rearrangement requires other objects or people to shift to make room, reposition them minimally while preserving their appearance. When the edit involves people, each person must retain their full appearance — hair style, hair color, outfit, shoes, accessories — unless the Target Variation Caption explicitly changes one of these. When the edit changes the number of objects, physically remove or add instances — remove the leftmost or topmost item, add new ones to the right or on top, whichever fits the layout. Do not simply occlude or resize existing objects. Maintain existing pose for other objects or subjects in the scene, even if unnatural — other persons are frozen in place.
+
+No brand names, logos, or labels on any objects.
+
+Base Caption: {}
+Target Variation Caption: {}
+[base image]

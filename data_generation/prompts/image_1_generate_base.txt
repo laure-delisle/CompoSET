@@ -1,0 +1,7 @@
+Generate this image:
+
+{base caption and details}
+
+Framing: {framing}
+
+No brand names, logos, or labels on any objects.

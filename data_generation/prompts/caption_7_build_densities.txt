@@ -1,0 +1,262 @@
+You are generating three density levels of captions for CompoSET, a compositionality benchmark for vision-language models.
+
+Each variation has TWO images: a base image and a variation image, differing by exactly one edit (material swap, color change, pose, cardinality change, etc.). You will produce 3 caption levels × 2 sides (base/var) = 6 captions per variation.
+
+The three levels are aligned to established VL benchmark density tiers:
+
+- SHORT  — bare attribute-binding NP. Matches ARO VG-Attribution / Winoground / ColorSwap / What'sUp density.
+- MEDIUM — standard VL caption with local (not scene-level) anchor. Matches COCO / SugarCrepe / BiVLC / VALSE density.
+- LONG   — dense scene sentence. Matches Flickr30k / SugarCrepe++ / CounterCurate density.
+
+---
+INPUT
+
+You will receive:
+1. CORRECTED CAPTION — full scene caption (base_caption + detail_sentences) for the base image.
+2. VARIATIONS — list of items, each with:
+   - id
+   - edit_types (hint only, may be stale after QC edits)
+   - edits (hint only — target_object, attribute, from/to)
+   - source_sentence (the clause in the corrected caption describing the edited object)
+   - l0_positive — the base-image caption used for image generation
+   - l0_negative — the variation-image caption used for image generation
+
+L0 is AUTHORITATIVE for identifying the edit. The edit metadata is a hint; diff l0_positive vs l0_negative yourself to see what actually changed. For swap / spatial / relational edits, BOTH affected objects appear in the diff and BOTH must appear in every level's base AND var.
+
+---
+SHARED RULES (apply to all three levels)
+
+1. Gendered words are BANNED. Never "man / woman / boy / girl". Always "a person" or "the person".
+
+2. Role nouns in L0 (dentist, patient, customer, chef, barista, mechanic, ceramicist, watchmaker, etc.) are PRESERVED verbatim at ALL levels. Outfit becomes extra grounding on top, never a substitute.
+   - L0: "a dentist holding a probe" →
+     - short:  "a dentist holding a probe"
+     - medium: "a dentist in a blue surgical gown holding a metal probe"
+     - long:   full sentence from corrected caption.
+
+3. Density progression must satisfy CONTENT SUBSET: short ⊆ medium ⊆ long.
+   - Every content word in short (head nouns, edit attributes, instance selectors) must appear in medium AND long.
+   - Every content word in medium must appear in long.
+   - L0 content (head nouns, edit attributes, instance selectors like "leftmost", "middle") must appear in all three levels.
+
+4. Articles: default to "a / an" (indefinite, COCO style). Use "the" only for:
+   - instance selectors ("the leftmost coconut shell", "the middle plate", "the one with the red lid")
+   - uniquely referring expressions when context makes it unambiguous ("the swing" when the scene has exactly one swing).
+
+5. For modify_presence edits: negative uses "no [object]" pattern at every level.
+   - short:  "sunglasses" / "no sunglasses"
+   - medium: "sunglasses on the metal surface" / "no sunglasses on the metal surface"
+   - long — shared-frame rule:
+     * If the source sentence has OTHER objects alongside the removed one, use "replace clause" or "but no [object]" pattern on the same source sentence. Base and var share the full frame, differ only in the object's clause.
+     * If the source sentence is ENTIRELY about the removed object (sole subject), DO NOT use that sentence alone for var. Instead: pick a DIFFERENT source sentence from the corrected caption that also mentions the object's location/neighbor, OR construct a short scene sentence combining the setting + the removed object's neighbor. Use the SAME constructed/picked frame for base AND var; differ only in the object's clause.
+   - long — STRIP DECORATIVE ATTRIBUTES ON THE REMOVED OBJECT IN BASE. In the long base, the removed object should NOT carry decorative attributes (material, color, shape, pattern, size, state) beyond what's needed to disambiguate. This keeps base and var symmetric — base differs from var only in the object's presence. KEEP: count ("three", "a pair of"), content-type disambiguator ("of soy sauce", "of dried herbs" when multiple tins/bottles exist), position/anchor ("behind the tin", "on the right side").
+     * Examples:
+       - "a pair of opaque brown plastic sunglasses" → "a pair of sunglasses" (drop opaque/brown/plastic)
+       - "a closed blue hardcover passport" → "a passport" (drop closed/blue/hardcover)
+       - "a full bottle of soy sauce" → "a bottle of soy sauce" (drop "full"; keep "of soy sauce")
+       - "three round brown coconut shells arranged in a row" → "three coconut shells arranged in a row" (drop round/brown; keep "three" and position)
+       - "an open metal tin of dried herbs" → "a tin of dried herbs" (drop open/metal; keep "of dried herbs" if it distinguishes from other tins)
+   - WORKED EXAMPLES (both shared-frame rule AND base-attribute-stripping applied):
+     * s013_v26 (sunglasses, other objects present):
+       base: "A round silver metallic watch and a pair of sunglasses rest on the far right side of the metal surface."
+       var:  "A round silver metallic watch rests on the far right side of the metal surface, but no sunglasses."
+     * s011_v28 (coconut shells sole-subject; construct shared frame):
+       base: "A closed blue metal tin sits upright on the sand, with three coconut shells arranged in a row behind it."
+       var:  "A closed blue metal tin sits upright on the sand, but no coconut shells behind it."
+
+6. For swap / spatial-rearrangement / relational edits: BOTH affected objects appear in base AND var, at every level. Never produce a pair where one side names one object and the other names a different object.
+
+7. For compound edits (e.g. state + cardinality, or cardinality + presence): keep ALL edited dimensions at every level.
+
+8. No repeated consecutive words (e.g. "two two"). No gender terms. No typos.
+
+9. SWAP PURITY: for any swap edit, the ONLY token-level differences between base and var are the swapped attributes themselves. Do NOT introduce incidental changes (verb form, article, preposition, word order of surrounding phrases, noun synonyms). Example:
+   - GOOD: "a red tin and a blue bowl on the cart" / "a blue tin and a red bowl on the cart"
+   - BAD:  "a red tin and a blue bowl on the cart" / "a blue container and a red dish sitting on the cart"  (bowl→dish, tin→container, on→sitting on are incidental)
+
+10. ATTRIBUTE INJECTION: the edited attribute may not appear verbatim in source_sentence (it may have been added during QC or never been in the corrected caption). Diff l0_positive vs l0_negative to find the edit tokens. If the L0 edit token is absent from source_sentence, INSERT it at the right attachment point in the long caption (on the edited object). Base long gets the L0-pos attribute; var long gets the L0-neg attribute.
+
+11. COMPOUND-SENTENCE PRESERVATION (distinct from weaving): if the source is ONE sentence containing multiple clauses about different objects or people (joined by "and", "while", "but", ", and"), keep the FULL compound sentence as the long caption. Apply the edit only to the affected clause; the unaffected clause stays verbatim as scene context. This is different from MULTI-sentence edits (edit spans TWO separate sentences) which require weaving.
+   - Example (compound, edit on first clause): source "One person is pouring water from a pitcher while another person is stirring a pot on the stove." Edit water→juice. Long: keep full sentence, only swap water→juice.
+   - Example (multi-sentence, edit spans base_caption + surface detail): weave into one pruned sentence per the weaving rules below.
+
+12. SEPARATOR between coupled entities (short/medium):
+    - Use "AND" for pure NP+NP coordination (no verb or gerund in either side). Matches ARO/SugarCrepe/ColorSwap/Winoground benchmark style.
+      - Example: "a terracotta pot and a metal tin", "a wooden coffee table and a glass vase"
+    - Use "," (comma, asyndeton) for parallel VERB or GERUND clauses.
+      - Example: "a dentist holding a probe, a patient in the chair", "a person in a black sweater writing, a person in a green jacket pointing"
+
+13. SWAP-ROLE WITH OUTFIT-DISAMBIGUATED PEOPLE: when two anonymous people are disambiguated by outfit and the edit swaps their roles/actions, short may exceed the 8-word target (up to ~14 words) to accommodate two "[a person in a X]" descriptors + two actions. Prioritize natural phrasing over hitting the word budget.
+   - Example: "a person in a black sweater writing, a person in a green jacket pointing" / (swap).
+
+---
+SHORT RULES
+
+Target: 4–8 words per caption. Bare attribute-binding NP.
+
+Keep: head noun(s), edit attribute(s), instance disambiguator if the scene has multiple similar objects (check the corrected caption for context).
+
+Strip: scene anchor ("on the cart"), decorative materials/colors/shapes/sizes/patterns that are NOT the edit and NOT needed to disambiguate which of several similar objects in the scene is meant.
+
+A material/color/shape/etc. is NOT decorative if it is (a) the attribute being edited, or (b) the ONLY way to distinguish the target object from others of the same type in the scene.
+
+STRIP BY DEFAULT. Short is MINIMAL by design. For every non-edit attribute (material, shape, color, size, pattern, quality modifier like "full"/"closed"/"rectangular"), the default action is STRIP. Only KEEP a non-edit attribute if the corrected caption shows multiple objects of the same head-noun type in the scene AND that attribute is the only way to pick out the target. Single-instance objects (one bucket, one table, one pitcher) need no descriptor beyond the head noun and the edit attribute.
+
+Concrete strip examples (edit attribute in ALL CAPS for clarity):
+- L0 "a full transparent glass of water" + transparency edit → short "a TRANSPARENT glass" (strip "full", "of water" if only one glass in scene)
+- L0 "a rectangular metal table" + material edit → short "a METAL table" (strip "rectangular")
+- L0 "a transparent glass pitcher" + transparency edit → short "a TRANSPARENT pitcher" (strip "glass" if only one pitcher in scene)
+- L0 "two yellow pencils" + cardinality edit → short "TWO pencils" (strip "yellow")
+- L0 "a transparent plastic water bottle" + transparency edit → short "a TRANSPARENT bottle" (strip "plastic", "water")
+- L0 "a metal bucket on the left side" + presence edit → short "a bucket" / "no bucket" (strip "metal", strip anchor)
+
+Examples:
+- modify_color:         "a red tin" / "a blue tin"
+- modify_material:      "a terracotta pot" / "a stone pot"
+- modify_pattern:       "a striped bowl" / "a checkered bowl"
+- modify_transparency:  "translucent bottles" / "opaque bottles"
+- modify_cardinality:   "three bottles" / "two bottles"
+- modify_presence:      "a cloth" / "no cloth"
+- modify_state:         "an open tin" / "a closed tin"
+- modify_state:         "a folded cloth" / "an unfolded cloth"
+- modify_state (PREDICATIVE FORM with "is/are"/"has" REQUIRED when the state descriptor is a prepositional phrase or complex predicate that doesn't fit naturally as a pre-modifier):
+    "the leftmost coconut shell is full of sand" / "the leftmost coconut shell is empty"
+    (NP-form "the leftmost coconut shell full of sand" would be telegraphic.)
+    This rule applies at SHORT AND MEDIUM levels. Use "is/are" whenever the state is a PP or complex predicate (e.g. "full of sand", "empty", "stacked on top of each other"). For simple single-word past participles ("folded", "closed", "open"), the pre-modifier NP form is fine.
+- modify_shape:         "a rectangular tin" / "a round tin"
+- modify_object:        "a pot" / "a vase"
+- modify_pose (obj):    "a bottle resting horizontally" / "a bottle standing upright"
+- modify_pose (person): "a person kneeling" / "a person standing"
+- modify_action:        "a person eating" / "a person reading"
+- swap_material:        "a wooden coffee table and a glass vase" / "a glass coffee table and a wooden vase"
+- swap_material:        "a terracotta pot and a metal tin" / "a metal pot and a terracotta tin"
+- swap_role:            "a dentist holding a probe, a patient in the chair" / "a patient holding a probe, a dentist in the chair"
+- spatial_rearrangement: "a bucket on the left and a sponge on the right of the wheel" / (swap)
+- hand-swap:            "a notebook in the left hand and a pen in the right hand" / (swap)
+- compound (state+cardinality): "two intact tomatoes" / "one sliced and one intact tomato"
+
+---
+MEDIUM RULES
+
+Target: 8–12 words per caption. COCO-style caption: head noun(s) + edit attribute(s) + local anchor.
+
+CASING/PUNCTUATION: medium captions are full sentences — capitalize the first letter, end with a period. (Matches COCO / SugarCrepe / BiVLC / Flickr30k style.) Short captions stay lowercase without terminal punctuation (ARO/ColorSwap style); long captions are already Capital + period.
+
+Must satisfy short ⊆ medium: every content word in short appears here.
+
+NO SCENE-LEVEL ANCHORS. Do not use phrases that name the setting at a room / venue / terrain level — e.g. "in a cinema lobby", "in a chemistry lab", "at a highway rest stop", "in a wheat field", "in an art gallery", "in a pottery studio", "on a glacier", "in a home office". These leak scene identity that is shared across all variations and add no variation-specific signal.
+
+Anchor LOCALLY instead, choosing the first that fits:
+  (a) SURFACE the object rests on / sits in: "on the cart", "on the cutting board", "on the lab bench", "on the counter", "in the basket"
+  (b) CO-PRESENT OBJECT: "beside the thermos", "next to the rolling pin", "to the right of the bucket"
+  (c) PERSON'S ACTIVITY (for person scenes): "kneading dough", "pointing at a poster", "lacing up a boot"
+If objects + activity alone make a natural 8–12w caption, no location anchor is needed at all. Do not invent one just to fill words.
+
+Still strip decorative attributes not in short unless they're needed to ground the object. Aim for ≤2 decorative attributes per object at medium (COCO/Flickr range) when possible; 3 is acceptable but not preferred.
+
+PREDICATIVE "IS/ARE" AT MEDIUM (same rule as short rule for state-PP predicates):
+- When the state is a PP or complex predicate (e.g. "full of sand", "stacked on top of each other"), use "is/are" at MEDIUM too.
+- BAD:  "the leftmost coconut shell on the sand, full of sand" (telegraphic + awkward "sand…sand" repetition)
+- GOOD: "three coconut shells, the leftmost is full of sand"  (frame + predicate, natural)
+- GOOD: "two coconut shells stacked on top of each other, the topmost is empty"
+- For single-word past participles ("folded", "closed", "open"), the NP form is fine without "is".
+
+MEDIUM FRAME FOR STATE-EDITS WITH INSTANCE SELECTORS:
+When the edit is on the [leftmost / middle / one-of-N] of a group, frame medium as:
+  "[count] [objects], the [selector] is [state]" / "[count] [objects], the [selector] is [new-state]"
+rather than "the [selector] [object], [state]" which tends to read awkwardly at medium density.
+
+For pose/action edits where the person is ALREADY grounded by action (holding, wearing, sitting at), do not stack a redundant surface anchor. The action is the anchor.
+  - BAD:  "a person wearing a red coat standing by the counter"
+  - GOOD: "a person wearing a red coat"
+  - BAD:  "full champagne flutes held by the people at the table"
+  - GOOD: "people holding full champagne flutes"
+
+Prefer ACTIVE voice: "a person holding X", not "X held by a person".
+
+Spatial anchors must be visually accurate ("above", "along", "on" — match what you'd see in the image).
+
+Examples:
+- s001_v21 medium: "a terracotta pot and a metal tin on the cart" / "a metal pot and a terracotta tin on the cart"  [surface anchor]
+- s002_v12 medium: "a dentist in a blue surgical gown holding a metal probe" / "a dentist in a blue surgical gown writing on a clipboard"  [activity anchor]
+- s011_v16 medium: "the leftmost coconut shell on the sand, full of sand" / "the leftmost coconut shell on the sand, empty"  [surface anchor]
+- s019_v08 medium: "salmon nigiri on the left plate and a maki roll on the middle plate" / (swap)  [surface anchor]
+- s074_v05 medium: "a person in a coral floral cardigan pointing at a movie poster" / "a person in a coral striped cardigan pointing at a movie poster"  [activity anchor — NOT "in a cinema lobby"]
+- s078_v11 medium: "a person kneading dough on a wooden cutting board" / "a person cutting dough on a wooden cutting board"  [surface anchor — NOT "in a wheat field"]
+- s080_v08 medium: "a person polishing a large bronze sculpture" / "a person photographing a large bronze sculpture"  [activity+object — no location anchor needed]
+
+---
+LONG RULES
+
+Target: ~15–40 words per caption, SOURCE-DRIVEN length. Long is not a fixed-length target — it is the source sentence(s) from the corrected caption with the edit applied. Length varies with source sentence length. Cap at 40 words to fit CLIP's 77-token encoder safely.
+
+When source is a short compound sentence (~15-20w), long may overlap medium word count; CONTENT still differs (long keeps full source structure and decorative words; medium strips decoratives and keeps only the edit + anchor).
+
+Must satisfy medium ⊆ long: every content word in medium appears here.
+
+Shape: the source sentence(s) from the corrected caption, with the edit applied to the negative.
+
+Single-sentence edits: LONG base = source sentence verbatim; LONG var = source sentence with the edit applied. If the source sentence exceeds the 40-word budget, prune verbose descriptors on UNCHANGED scene elements (never on the changed object).
+
+40-WORD CAP IS STRICT. Before emitting a long caption, count the words. If >40, prune decorative descriptors on UNCHANGED scene elements until ≤40. Typical prunes: "rectangular metal table" → "table" (if table material is not the edit); "blue ceramic mug" → "mug" (if mug color/material is not the edit); "small round ceramic jars with lids closed" → "ceramic jars" (if not edited); extra clauses describing unaffected people ("while another person is sitting holding a closed book") — KEEP these if the source sentence is a compound sentence AND the overall caption fits in 40w; DROP them if needed to meet the budget. Never prune words from the changed object.
+
+PRUNING PROTOCOL FOR DENSE MULTI-PERSON / MULTI-OBJECT SCENES:
+When the source sentence describes a 3-person or 3-object compound scene (e.g. watchmaker's bench with 3 people, yoga studio with 3 yogis, ski slope with 2 skiers and a hip pack, apothecary tray with cup+blister pack+gauze), the compound sentence often exceeds the 40-word cap. Apply:
+
+1. IDENTIFY the edit-affected person/object using the L0 diff.
+2. KEEP full descriptive detail on the edit-affected subject (action, pose, clothing, instrument, etc. from the source).
+3. TRIM or COLLAPSE unaffected subjects to minimal mentions:
+   - Strip outfit details on unaffected persons → keep only "another person" / "while another person stands"
+   - Strip decorative attributes on unaffected objects → keep only the head noun
+   - A whole unaffected clause can be dropped entirely if the caption still fits after step 2 exceeds 40 words
+4. PRESERVE base/var SYMMETRY: base and var must share the same trimmed structure; they may differ only in the edit tokens.
+5. PRESERVE the edit tokens verbatim from L0.
+
+Worked examples of aggressive pruning (applied in CompoSET v1):
+- s061_v06 (action edit on polisher, 3-person watchmaker scene) →
+  base: "The person at the watchmaker's bench is polishing a pocket watch with a white cotton cloth, while another person stands reaching across with tweezers."
+  var:  "The person at the watchmaker's bench is listening to a pocket watch held near one ear, while another person stands reaching across with tweezers."
+  (3rd person dropped; 2nd person's outfit stripped; pose/hunched-over detail dropped when not part of edit)
+- s064_v14 (color swap on boots + trousers, 2-person ski scene) →
+  base: "The standing person wears a gold jumpsuit with a floral pink pattern and white ski boots, while the fallen person sits wearing a beige sweater over red ski trousers and gray boots."
+  var:  (same with white/red colors swapped)
+  (hip pack dropped; "with a zipped teal hip pack at their waist" clause removed to hit budget)
+- s070_v09 (action edit on right-side yogi, 3-person yoga scene) →
+  base: "The person on the left is balancing on one leg; in the center, a person rests on their knees; on the right, a person is bending forward with both palms flat on the mat."
+  var:  "The person on the left is balancing on one leg; in the center, a person rests on their knees; on the right, a person is sitting cross-legged on the mat."
+  (arms-raised-overhead and legs-straight details stripped from unaffected yogis)
+
+Multi-sentence edits (edit spans base_caption + a detail, or two details): WEAVE the affected content into ONE sentence. Do NOT staple two full sentences together. Drop unaffected objects. Drop verbose modifiers on unchanged scene elements. Keep only: setting, subject/action, changed objects with anchors needed to ground them.
+
+STATE-COLLAPSE IN LONG VAR: when a modify_state edit makes the edited instance match the state of all other instances in the scene (e.g. leftmost shell "full of sand" → "empty" while the other two were already "empty"), collapse the list in the long var to avoid awkward repetition. Use "all [N] of them are [state]" or "all [state]" rather than "the leftmost [state] and the other two [state]".
+- BAD:  "...the leftmost one empty and the other two empty."
+- GOOD: "...all three of them are empty."
+⊆ caveat: this drops "leftmost" from long var. That's an accepted trade-off — the negative state collapses the instance distinction, and natural phrasing wins.
+
+Substitution cleanup: if a substitution makes a surrounding descriptor nonsensical (e.g. "a bowl with a closed lid" after replacing "coffee cup" with "bowl"), drop or adjust the incompatible descriptor.
+
+WEAVING EXAMPLE:
+- BAD (two stapled sentences, >50 words):
+  "A person in a green apron is shaping a clay bowl on a spinning pottery wheel at a wooden workbench in a pottery studio, with a metal bucket positioned on the left side of the workbench. On the right side of the workbench, there are two small round ceramic jars with lids closed, a full transparent glass of water, and a yellow rectangular sponge."
+- GOOD (one woven sentence, pruned, ~35 words):
+  "A person in a green apron is shaping a clay bowl in a pottery studio, with a metal bucket on the left side and a yellow rectangular sponge on the right side of the workbench."
+
+For modify_presence at long level: keep the full source sentence for base; for var, either replace the object's clause with "but no [object]" or append "but no [object]" at the end. Example:
+- base: "A rolled-up blue fabric tarp, a stoppered glass bottle of water, and some leaves are inside the brown wicker basket."
+- var:  "A rolled-up blue fabric tarp and some leaves are inside the brown wicker basket, but no glass bottle of water."
+
+---
+OUTPUT FORMAT
+
+Return a JSON array. Each element has exactly these keys:
+{
+  "id": "sXXX_vYY",
+  "short_base":  "...",
+  "short_var":   "...",
+  "medium_base": "...",
+  "medium_var":  "...",
+  "long_base":   "...",
+  "long_var":    "..."
+}
+
+Output only the JSON array. No preamble, no commentary, no markdown fences.

@@ -1,0 +1,155 @@
+You are editing scene captions for CompoSET, a compositional
+vision-language benchmark. You will be given a generated image and the
+caption that was used to generate it. Compare the image to the caption
+and propose structured edits so the caption accurately describes what
+is actually visible in the image.
+
+---
+INPUT FORMAT
+
+[image]
+
+base_caption: "..."
+detail_sentences:
+  [region]: "..."
+  [region]: "..."
+  ...
+
+---
+OUTPUT FORMAT
+
+For each discrepancy, output one edit:
+
+- sentence: base_caption | [region label]
+  field: [taxonomy axis]
+  target: "..."
+  from: "..."
+  to: "..."
+
+If a sentence is accurate, output:
+
+- sentence: base_caption | [region label]
+  status: ok
+
+After all per-sentence checks, output the corrected full caption between
+the exact delimiters shown, with no text before or after them:
+
+<<<CORRECTED>>>
+base_caption: "..."
+detail_sentences:
+  [region]: "..."
+  [region]: "..."
+  ...
+<<<END>>>
+
+---
+WHAT TO CHECK
+
+Compare the image against the caption along these axes:
+
+  color              — actual color of each named object
+  material           — visible material or texture
+  pattern            — surface pattern (solid, striped, etc.)
+  shape              — object shape
+  transparency       — opaque, translucent, transparent
+  cardinality        — count of each mentioned object
+  presence           — objects mentioned but absent, or prominent but
+                       unmentioned
+  spatial relation   — left/right, above/below, in front of/behind
+  state              — open/closed, full/empty, folded/unfolded, etc.
+  action             — what subjects are actually doing
+  pose               — body or object orientation
+  object identity    — correct object category (e.g. mug vs glass)
+
+---
+HARD CONSTRAINTS
+
+One edit per discrepancy. Do not bundle multiple fixes into a single
+edit entry.
+
+Only fix what is wrong. Do not rephrase, restructure, or improve
+wording. The corrected caption must be identical to the input except
+for the specific edits listed.
+
+Use viewer-relative spatial terms ("on the left side", "the leftmost"),
+never subject-relative ("to her right") or vague ("near", "next to").
+
+Do not add directional placement for fixed architectural elements
+(windows, walls, doors) — their position is not foilable.
+
+If something in the caption is ambiguous or not clearly visible in the
+image, leave it as-is.
+
+Do not add commentary, caveats, or questions. Output only the edit
+entries and the corrected block.
+
+---
+EXAMPLE
+
+Input:
+
+[image of the scene]
+
+base_caption: "A woman in a green denim jacket is pulling a red
+hard-shell suitcase while a man in a black leather bomber jacket is
+typing on a silver laptop at a metal bench in an airport terminal,
+with a canvas duffel bag on the left side of the bench."
+detail_sentences:
+  bench surface: "There are two white paper coffee cups with plastic
+  lids, a folded gray wool scarf, and an open clear plastic water
+  bottle on the bench."
+  floor area: "A stacked pair of blue nylon backpacks and a rectangular
+  brown cardboard box are on the tiled floor in front of the bench."
+  background: "There is a row of black plastic seats along the far wall
+  and a tall digital departure board mounted above them."
+
+Output:
+
+- sentence: base_caption
+  field: color
+  target: "suitcase"
+  from: "red"
+  to: "navy blue"
+
+- sentence: base_caption
+  field: spatial relation
+  target: "canvas duffel bag"
+  from: "on the left side of the bench"
+  to: "on the right side of the bench"
+
+- sentence: bench surface
+  field: cardinality
+  target: "white paper coffee cups"
+  from: "two"
+  to: "three"
+
+- sentence: bench surface
+  status: ok (scarf and water bottle match)
+
+- sentence: floor area
+  field: presence
+  target: "brown cardboard box"
+  from: "present"
+  to: "absent"
+
+- sentence: background
+  status: ok
+
+<<<CORRECTED>>>
+base_caption: "A woman in a green denim jacket is pulling a navy blue
+hard-shell suitcase while a man in a black leather bomber jacket is
+typing on a silver laptop at a metal bench in an airport terminal,
+with a canvas duffel bag on the right side of the bench."
+detail_sentences:
+  bench surface: "There are three white paper coffee cups with plastic
+  lids, a folded gray wool scarf, and an open clear plastic water
+  bottle on the bench."
+  floor area: "A stacked pair of blue nylon backpacks are on the
+  tiled floor in front of the bench."
+  background: "There is a row of black plastic seats along the far
+  wall and a tall digital departure board mounted above them."
+<<<END>>>
+
+---
+Check every sentence against the image. List all discrepancies, then
+output the corrected caption.
