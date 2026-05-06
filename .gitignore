@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+.envrc
+
+# Secrets / credentials
+*.key
+*.pem
+*api_key*
+*token*
+*credentials*
+.hf_token
+hf_token*
+
+# Data caches (eval pulls benchmarks from HF on demand; cached locally)
+.cache/
+*.cache/
+results/cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local logs and artifacts
+*.log
+results/runs/
+runs/
