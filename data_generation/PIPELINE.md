@@ -1,6 +1,6 @@
 # CompoSET data-generation pipeline
 
-This directory contains the scripts and prompts used to produce the CompoSET benchmark from scratch (80 scenes, ~1,776 variations, three caption density tiers, base + foil images per variation). Reproduction is end-to-end: starting from `scene_settings.csv`, the pipeline below builds everything that ships in the released dataset.
+This directory contains the scripts and prompts used to produce the CompoSET benchmark from scratch (80 scenes, ~1,776 variations, three caption verbosity tiers, base + foil images per variation). Reproduction is end-to-end: starting from `scene_settings.csv`, the pipeline below builds everything that ships in the released dataset.
 
 ## Quick reference
 
@@ -76,10 +76,10 @@ The pipeline runs in three driver scripts. Each script bundles tightly-coupled s
 - Inputs: base image + each variation's `(positive, negative)` L0 captions.
 - Output: `data/00N/images/s00N_v01.png` … one per variation. The prompt explicitly instructs the editor to make a single localized change to the base image, holding the rest of the scene constant. This is the load-bearing prompt behind contribution #1 (*surgical single-edit foils*) and is reusable on its own.
 
-### 6. Generate the three density tiers (Claude)
+### 6. Generate the three verbosity tiers (Claude)
 
-- Script: [`scripts/build_densities.py`](scripts/build_densities.py)
-- Prompt: [`prompts/caption_7_build_densities.txt`](prompts/caption_7_build_densities.txt)
+- Script: [`scripts/build_verbosities.py`](scripts/build_verbosities.py)
+- Prompt: [`prompts/caption_7_build_verbosities.txt`](prompts/caption_7_build_verbosities.txt)
 - Inputs: the corrected scene caption + the L0 variation file.
 - Output: writes the `short`, `medium`, and `long` caption tiers into `data/00N/s00N_caption_variations.json`. The three tiers are aligned to established benchmark caption styles:
 

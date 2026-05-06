@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CompoSET QC</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>CompoSET QC</h1>
+    <div class="tabs">
+      <div class="tab tab-active" id="tab-base">Base Caption</div>
+      <div class="tab" id="tab-vars">Variations</div>
+      <div class="tab" id="tab-l1">Verbosities</div>
+    </div>
+    <div class="nav-controls">
+      <button class="btn-toggle" id="btn-hide-reviewed" title="Hide reviewed scenes">Hide reviewed</button>
+      <select id="scene-select"></select>
+      <span class="nav-info" id="nav-info"></span>
+      <button class="btn-nav" id="btn-prev">&larr; Prev</button>
+      <button class="btn-nav" id="btn-next">Next &rarr;</button>
+      <button class="btn-nav" id="btn-last" title="Jump to last batch of this scene">Last &raquo;</button>
+    </div>
+  </div>
+
+  <!-- UC1: Base Caption Correction -->
+  <div id="view-base">
+    <div class="base-image-panel">
+      <img id="base-image" alt="Base image">
+    </div>
+    <div class="base-caption-panel">
+      <div class="section-label">Base Caption (original, read-only)</div>
+      <div class="caption-readonly" id="base-caption-text"></div>
+
+      <div class="section-label">Corrected Caption (editable)</div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-swatch legend-swatch-auto"></div>
+          <span>Auto-corrected</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch legend-swatch-user"></div>
+          <span>Your edit</span>
+        </div>
+      </div>
+      <div id="corrected-caption-editor"></div>
+
+      <div class="base-submit-row">
+        <button class="btn btn-submit" id="btn-submit-base">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UC2: Variation Review -->
+  <div id="view-vars">
+    <div class="var-base-panel">
+      <img id="var-base-image" alt="Base image">
+    </div>
+    <div class="var-grid-panel">
+      <div id="var-grid"></div>
+    </div>
+  </div>
+
+  <!-- UC3: L1 Pair Review -->
+  <div id="view-l1" style="display:none">
+    <div id="l1-list"></div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

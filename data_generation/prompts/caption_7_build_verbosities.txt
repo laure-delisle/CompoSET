@@ -1,12 +1,12 @@
-You are generating three density levels of captions for CompoSET, a compositionality benchmark for vision-language models.
+You are generating three verbosity levels of captions for CompoSET, a compositionality benchmark for vision-language models.
 
 Each variation has TWO images: a base image and a variation image, differing by exactly one edit (material swap, color change, pose, cardinality change, etc.). You will produce 3 caption levels × 2 sides (base/var) = 6 captions per variation.
 
-The three levels are aligned to established VL benchmark density tiers:
+The three levels are aligned to established VL benchmark verbosity tiers:
 
-- SHORT  — bare attribute-binding NP. Matches ARO VG-Attribution / Winoground / ColorSwap / What'sUp density.
-- MEDIUM — standard VL caption with local (not scene-level) anchor. Matches COCO / SugarCrepe / BiVLC / VALSE density.
-- LONG   — dense scene sentence. Matches Flickr30k / SugarCrepe++ / CounterCurate density.
+- SHORT  — bare attribute-binding NP. Matches ARO VG-Attribution / Winoground / ColorSwap / What'sUp verbosity.
+- MEDIUM — standard VL caption with local (not scene-level) anchor. Matches COCO / SugarCrepe / BiVLC / VALSE verbosity.
+- LONG   — dense scene sentence. Matches Flickr30k / SugarCrepe++ / CounterCurate verbosity.
 
 ---
 INPUT
@@ -34,7 +34,7 @@ SHARED RULES (apply to all three levels)
      - medium: "a dentist in a blue surgical gown holding a metal probe"
      - long:   full sentence from corrected caption.
 
-3. Density progression must satisfy CONTENT SUBSET: short ⊆ medium ⊆ long.
+3. Verbosity progression must satisfy CONTENT SUBSET: short ⊆ medium ⊆ long.
    - Every content word in short (head nouns, edit attributes, instance selectors) must appear in medium AND long.
    - Every content word in medium must appear in long.
    - L0 content (head nouns, edit attributes, instance selectors like "leftmost", "middle") must appear in all three levels.
@@ -164,7 +164,7 @@ PREDICATIVE "IS/ARE" AT MEDIUM (same rule as short rule for state-PP predicates)
 MEDIUM FRAME FOR STATE-EDITS WITH INSTANCE SELECTORS:
 When the edit is on the [leftmost / middle / one-of-N] of a group, frame medium as:
   "[count] [objects], the [selector] is [state]" / "[count] [objects], the [selector] is [new-state]"
-rather than "the [selector] [object], [state]" which tends to read awkwardly at medium density.
+rather than "the [selector] [object], [state]" which tends to read awkwardly at medium verbosity.
 
 For pose/action edits where the person is ALREADY grounded by action (holding, wearing, sitting at), do not stack a redundant surface anchor. The action is the anchor.
   - BAD:  "a person wearing a red coat standing by the counter"

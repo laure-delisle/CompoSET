@@ -156,7 +156,7 @@ indoor/outdoor framing). Never use "half-full" or "half-empty" —
 use "full" or "empty" instead, as partial-fill states are ambiguous
 in images.
 
-Attribute density: aim for at least two distinct taxonomy axes per
+Attribute verbosity: aim for at least two distinct taxonomy axes per
 detail sentence. Prefer concrete, swappable attributes over generic
 descriptions. Stack attributes on objects — e.g. "a closed red
 leather notebook" (state + color + material) is better than

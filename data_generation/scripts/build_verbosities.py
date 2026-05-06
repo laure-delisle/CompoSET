@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Build short / medium / long caption densities for all variations.
+"""Build short / medium / long caption verbosities for all variations.
 
-Generates three benchmark-aligned density levels per variation via Claude:
+Generates three benchmark-aligned verbosity levels per variation via Claude:
   - short  (~4-8 words)   — ARO / Winoground / ColorSwap tier
   - medium (~8-12 words)  — COCO / SugarCrepe / BiVLC tier
   - long   (~20-40 words) — Flickr30k / SugarCrepe++ tier
@@ -12,11 +12,11 @@ Discarded variations (status == "discarded" at L0 level) are never touched.
 Halts if any variation has regen_requested — handle those first.
 
 Usage:
-    python pipeline/build_densities.py --dry-run                 # plan only
-    python pipeline/build_densities.py --test s001_v21,s002_v12  # print JSON, no writes
-    python pipeline/build_densities.py --scene 5                 # single scene
-    python pipeline/build_densities.py                           # all scenes
-    python pipeline/build_densities.py --from 11 --to 80 --workers 8
+    python pipeline/build_verbosities.py --dry-run                 # plan only
+    python pipeline/build_verbosities.py --test s001_v21,s002_v12  # print JSON, no writes
+    python pipeline/build_verbosities.py --scene 5                 # single scene
+    python pipeline/build_verbosities.py                           # all scenes
+    python pipeline/build_verbosities.py --from 11 --to 80 --workers 8
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ from common import (
 )
 
 
-PROMPT_PATH = PROMPTS_DIR / "caption_7_build_densities.txt"
+PROMPT_PATH = PROMPTS_DIR / "caption_7_build_verbosities.txt"
 
 
 def _load_qc(scene_num: int) -> dict:
@@ -66,7 +66,7 @@ def _regen_requested_ids(qc: dict) -> list[str]:
 
 
 def classify_scene(scene_num: int) -> dict | None:
-    """Plan the density-build work for a scene.
+    """Plan the verbosity-build work for a scene.
 
     Returns None if required input files are missing.
     """
@@ -157,7 +157,7 @@ def _apply_levels(variation: dict, lv: dict, only_tier: str | None = None) -> di
     return nv
 
 
-def _clear_density_qc(qc: dict, target_ids: list[str]) -> None:
+def _clear_verbosity_qc(qc: dict, target_ids: list[str]) -> None:
     """Clear l1_* and l05_* QC keys for regenerated variations.
     Keep base L0 QC state (status, timestamp, positive_original, etc.).
     Also drop scene-level __l1__ marker since L1 is gone/new.
@@ -223,10 +223,10 @@ def run_scene(plan: dict, client: anthropic.Anthropic, only_tier: str | None = N
 
     files["variations"].write_text(json.dumps(out_vars, indent=2))
 
-    # Clear density-related QC state for regenerated variations
+    # Clear verbosity-related QC state for regenerated variations
     qc = _load_qc(n)
     if qc:
-        _clear_density_qc(qc, target_ids)
+        _clear_verbosity_qc(qc, target_ids)
         files["qc_decisions"].write_text(json.dumps(qc, indent=2))
 
     return {
@@ -253,7 +253,7 @@ def _print_test(plan: dict, client: anthropic.Anthropic, test_ids: set[str]):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Build short/medium/long caption densities for variations.",
+        description="Build short/medium/long caption verbosities for variations.",
     )
     parser.add_argument("--scene", type=int, default=None)
     parser.add_argument("--from", dest="from_scene", type=int, default=1)
