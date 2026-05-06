@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "composet"
 version = "1.0.0"
-description = "CompoSET: Compositional Single-Edit Testbed for Vision-Language Models"
+description = "CompoSET: A Controlled Single-Edit Benchmark for Vision-Language Compositionality"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"

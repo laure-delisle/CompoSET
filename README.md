@@ -1,13 +1,13 @@
 # CompoSET
 
-CompoSET — Compositional Single-Edit Testbed. A vision-language compositionality benchmark where each base / foil image pair differs by exactly one localized edit. 80 scenes, ~1,776 variations, 16 edit types, three caption verbosity tiers (`short` / `medium` / `long`). Submitted to NeurIPS 2026 Datasets & Benchmarks.
+CompoSET: A Controlled Single-Edit Benchmark for Vision-Language Compositionality. CompoSET contains 1,776 instances across 80 naturalistic scenes, spanning 16 edit types in 4 semantic categories, with captions at 3 verbosity levels.
 
 | | |
 |---|---|
 | 🤗 Dataset | https://huggingface.co/datasets/CompoSET/CompoSET |
 | 📄 Paper   | (under review) |
 
-This repository contains three pieces:
+The repository contains:
 
 - **`eval/`** — code to score vision-language models on CompoSET and on a suite of prior compositionality benchmarks (Winoground, BiVLC, SugarCrepe, ColorSwap, ColorBench, NaturalBench, MMVP, What'sUp, SugarCrepe++).
 - **`data_generation/`** — scripts and prompts to reproduce the dataset from scratch: scene caption → base image → auto-QC → variation captions → foil images → multi-tier captions → finalize. See [`data_generation/PIPELINE.md`](data_generation/PIPELINE.md).
