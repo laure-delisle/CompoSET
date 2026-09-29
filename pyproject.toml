@@ -9,7 +9,7 @@ description = "CompoSET: A Controlled Single-Edit Benchmark for Vision-Language 
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
-authors = [{name = "Anonymous Authors"}]
+authors = [{name = "Laure Delisle"}, {name = "Pietro Perona"}]
 keywords = [
     "vision-language",
     "compositionality",
