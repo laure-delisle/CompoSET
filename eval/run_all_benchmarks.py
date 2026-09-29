@@ -2,7 +2,7 @@
 benchmarks (Winoground, BiVLC, SugarCrepe, etc.).
 
 Usage:
-    python -m eval.run_all_benchmarks --model clip-b32 siglip-b16
+    python -m eval.run_all_benchmarks --models clip-b32 siglip-b16
     python -m eval.run_all_benchmarks --benchmarks winoground bivlc composet
 """
 
@@ -35,8 +35,12 @@ BENCH_DEFAULT = [
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--models", nargs="+", default=None,
+                        help="Model key(s) to run, space-separated. "
+                             "Defaults to all registered models.")
     parser.add_argument("--model", action="append", default=None,
-                        help="Model key(s) to run. Defaults to all.")
+                        help="Single model key; may be repeated. Kept for "
+                             "backward compatibility and merged with --models.")
     parser.add_argument("--output", default="results/",
                         help="Output directory root")
     parser.add_argument("--device", default="cuda")
@@ -53,7 +57,10 @@ def main() -> None:
                              "CompoSET/CompoSET).")
     args = parser.parse_args()
 
-    model_keys = args.model or list(MODELS.keys())
+    # Merge --models and --model (order-preserving, de-duplicated).
+    # Neither given -> run all registered models.
+    requested = list(dict.fromkeys((args.models or []) + (args.model or [])))
+    model_keys = requested or list(MODELS.keys())
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
     (out / "composet").mkdir(exist_ok=True)

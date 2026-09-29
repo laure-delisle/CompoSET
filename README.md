@@ -1,11 +1,13 @@
 # CompoSET
 
+Laure Delisle, Pietro Perona · California Institute of Technology
+
 CompoSET: A Controlled Single-Edit Benchmark for Vision-Language Compositionality. CompoSET contains 1,776 instances across 80 naturalistic scenes, spanning 16 edit types in 4 semantic categories, with captions at 3 verbosity levels.
 
 | | |
 |---|---|
 | 🤗 Dataset | https://huggingface.co/datasets/CompoSET/CompoSET |
-| 📄 Paper   | (under review) |
+| 📄 Paper   | arXiv (link forthcoming) |
 
 The repository contains:
 
@@ -41,7 +43,7 @@ python -m eval.run --models clip-b32 \
 ## Quickstart — run the full prior-benchmark suite
 
 ```bash
-python -m eval.run_all_benchmarks --model clip-b32 siglip-b16 \
+python -m eval.run_all_benchmarks --models clip-b32 siglip-b16 \
     --benchmarks composet winoground bivlc sugarcrepe whatsup naturalbench colorbench
 ```
 
@@ -74,7 +76,15 @@ A few of the registered eval models (`negclip-b32`, `dreamlip-b16-merged30m`, `c
 
 ## Citation
 
-See [`CITATION.bib`](CITATION.bib).
+If you use CompoSET, please cite (also available in [`CITATION.bib`](CITATION.bib)):
+
+```bibtex
+@misc{delisle2026composet,
+  title  = {{CompoSET}: A Controlled Single-Edit Benchmark for Vision-Language Compositionality},
+  author = {Delisle, Laure and Perona, Pietro},
+  year   = {2026}
+}
+```
 
 ## License
 
