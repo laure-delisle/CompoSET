@@ -7,7 +7,7 @@ CompoSET: A Controlled Single-Edit Benchmark for Vision-Language Compositionalit
 | | |
 |---|---|
 | 🤗 Dataset | https://huggingface.co/datasets/CompoSET/CompoSET |
-| 📄 Paper   | arXiv (link forthcoming) |
+| 📄 Paper   | https://arxiv.org/abs/2610.41118 |
 
 The repository contains:
 
@@ -80,9 +80,13 @@ If you use CompoSET, please cite (also available in [`CITATION.bib`](CITATION.bi
 
 ```bibtex
 @misc{delisle2026composet,
-  title  = {{CompoSET}: A Controlled Single-Edit Benchmark for Vision-Language Compositionality},
-  author = {Delisle, Laure and Perona, Pietro},
-  year   = {2026}
+  title         = {{CompoSET}: A Controlled Single-Edit Benchmark for Vision-Language Compositionality},
+  author        = {Delisle, Laure and Perona, Pietro},
+  year          = {2026},
+  eprint        = {2610.41118},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  url           = {https://arxiv.org/abs/2610.41118}
 }
 ```
 
