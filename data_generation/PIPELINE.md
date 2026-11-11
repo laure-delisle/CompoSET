@@ -53,7 +53,7 @@ The pipeline runs in three driver scripts. Each script bundles tightly-coupled s
 - Script: [`scripts/generate_base.py`](scripts/generate_base.py) — `step_1b`
 - Prompt: [`prompts/image_1_generate_base.txt`](prompts/image_1_generate_base.txt)
 - Inputs: the structured base caption from step 1.
-- Output: `data/00N/images/s00N_base.png`. The image is sampled at 1408×768 from `gemini-2.5-flash-image` (a.k.a. *nanobanana*) with up to five retries to enforce canonical size.
+- Output: `data/00N/images/s00N_base.png`. The image is sampled at 1408×768 from `gemini-3.1-flash-image-preview` (Gemini 3.1 Flash Image, a.k.a. *Nano Banana 2*) with up to five retries to enforce canonical size.
 
 ### 3. Auto-QC the caption against the image (Gemini)
 
@@ -111,7 +111,7 @@ After finalization, the `hf_release/` folder is the unit that gets uploaded to H
 | step | model |
 |---|---|
 | 1, 4, 6 | `claude-opus-4-6` (Anthropic) |
-| 2, 5    | `gemini-2.5-flash-image` (Google) |
+| 2, 5    | `gemini-3.1-flash-image-preview` (Google) |
 | 3       | `gemini-2.5-flash` (Google; vision-language QC) |
 
 Model IDs are pinned in [`scripts/common.py`](scripts/common.py).
