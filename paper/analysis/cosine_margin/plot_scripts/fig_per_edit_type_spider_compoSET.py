@@ -28,7 +28,7 @@ MODIFY_GROUPS = [
                          "modify_material", "modify_transparency"]),
     ("Action/Pose",     ["modify_action", "modify_pose"]),
     ("Object",          ["modify_object"]),
-    ("State/Quantity",  ["modify_state", "modify_presence", "modify_cardinality"]),
+    ("State/Quantity",  ["modify_state", "modify_presence", "modify_count"]),
     ("Spatial",         ["modify_spatial"]),
 ]
 # Swap_* edits — separate spider, since swaps are systematically harder than

@@ -38,7 +38,7 @@ EDIT_TO_GROUP = {
     "modify_action": "Action/Pose", "modify_pose": "Action/Pose",
     "modify_object": "Object",
     "modify_state": "State/Quantity", "modify_presence": "State/Quantity",
-    "modify_cardinality": "State/Quantity",
+    "modify_count": "State/Quantity",
     "modify_spatial": "Spatial",
     "swap_color": "Swaps", "swap_material": "Swaps",
     "swap_spatial": "Swaps", "swap_role": "Swaps",

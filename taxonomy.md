@@ -29,7 +29,7 @@ How many instances of an object are present.
 
 | Trait | Examples | edit\_type |
 |-------|----------|-----------|
-| **Cardinality** | one -> two, two -> several, three -> one | `modify_cardinality` |
+| **Cardinality** | one -> two, two -> several, three -> one | `modify_count` |
 | **Absence / presence** | vase on table -> no vase; object present vs absent | `modify_presence` |
 
 > **Design note -- Absence / presence:** Included provisionally. Tests whether a model understands "with X" vs "without X," which linguistically involves negation -- a compositional operation. However: (a) it may reduce to object detection rather than compositionality, and (b) unambiguous testing is hard (does "no vase on the table" mean the vase is absent entirely, or just not on the table?). Requires careful caption design.

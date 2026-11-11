@@ -154,15 +154,15 @@ savefig(fig, "fig_ssim_vs_lpips_scatter")
 if len(cs):
     ORDER = [
         "modify_color","modify_pattern","modify_shape","modify_material","modify_transparency",
-        "modify_spatial","modify_state","modify_presence","modify_cardinality",
+        "modify_spatial","modify_state","modify_presence","modify_count",
         "modify_action","modify_pose","modify_object",
         "swap_color","swap_material","swap_spatial","swap_role",
     ]
     cs2 = cs.copy()
-    cs2["edit_type"] = cs2["edit_type"].replace("modify_cardinality", "modify_count")
+    cs2["edit_type"] = cs2["edit_type"].replace("modify_count", "modify_count")
     means = cs2.groupby("edit_type")["frac_pixels_affected"].mean()
     stds = cs2.groupby("edit_type")["frac_pixels_affected"].std()
-    ORDER = [t.replace("modify_cardinality", "modify_count") for t in ORDER]
+    ORDER = [t.replace("modify_count", "modify_count") for t in ORDER]
     labels = [t for t in ORDER if t in means.index]
     vals = [means[t] for t in labels]
     errs = [stds[t] for t in labels]

@@ -50,7 +50,7 @@ EDIT_TYPE_ORDER: tuple[str, ...] = (
     # modify_* — spatial
     "modify_spatial",
     # modify_* — state / quantity
-    "modify_state", "modify_presence", "modify_cardinality",
+    "modify_state", "modify_presence", "modify_count",
     # modify_* — action / pose
     "modify_action", "modify_pose",
     # modify_* — object substitution

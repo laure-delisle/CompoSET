@@ -37,7 +37,7 @@ DRIFT TREATMENT
 When "reason" contains "drift":
 - Rewrite base and var so they share the SAME sentence skeleton (subject/verb/modifier positions), differing only in the edit tokens.
 - If the current base and var use different sentence openers ("On the desk…" vs "A … on the desk"), pick one and use it for both.
-- For modify_cardinality edits where the count changes: both base and var should use the same lead phrase; only the count word(s) and necessary agreement (is/are, a/one/two) change.
+- For modify_count edits where the count changes: both base and var should use the same lead phrase; only the count word(s) and necessary agreement (is/are, a/one/two) change.
   - BAD:  base "Three coconut shells are arranged in a row behind the tin, the leftmost full of sand and the other two empty." / var "Two coconut shells are arranged in a row behind the tin."  (var completely restructured)
   - GOOD: base "Three coconut shells are arranged in a row behind the tin." / var "Two coconut shells are arranged in a row behind the tin."
 - For modify_action/modify_pose where one version has more descriptive content than the other (e.g., base lists body-part positions, var drops them), keep the SAME structure and only swap the action verb.

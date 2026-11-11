@@ -9,7 +9,7 @@ plt.rcParams.update({
 
 df = load_long()
 df = df[(df["benchmark"] == "compoSET") & (df["metric_name"] == "frac_tokens_changed")].copy()
-df["edit_type"] = df["edit_type"].replace("modify_cardinality", "modify_count")
+df["edit_type"] = df["edit_type"].replace("modify_count", "modify_count")
 
 agg = df.groupby(["edit_type", "density_level"])["value"].agg(["mean", "std", "count"]).reset_index()
 edit_types = sorted(agg["edit_type"].unique())

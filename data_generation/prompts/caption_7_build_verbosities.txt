@@ -115,7 +115,7 @@ Examples:
 - modify_material:      "a terracotta pot" / "a stone pot"
 - modify_pattern:       "a striped bowl" / "a checkered bowl"
 - modify_transparency:  "translucent bottles" / "opaque bottles"
-- modify_cardinality:   "three bottles" / "two bottles"
+- modify_count:   "three bottles" / "two bottles"
 - modify_presence:      "a cloth" / "no cloth"
 - modify_state:         "an open tin" / "a closed tin"
 - modify_state:         "a folded cloth" / "an unfolded cloth"

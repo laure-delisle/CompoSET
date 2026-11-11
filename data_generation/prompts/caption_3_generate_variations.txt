@@ -85,7 +85,7 @@ Appearance:
   swap_color         — exchange colors between two objects in the scene
 
 Quantity:
-  modify_cardinality — change the count of an object (one/two/three)
+  modify_count — change the count of an object (one/two/three)
   modify_presence    — remove an object entirely (generate at least 2
                        per scene; see design note below)
 

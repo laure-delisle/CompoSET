@@ -38,7 +38,7 @@ C_BOTH      = "#CC79A7"  # reddish purple
 
 EDIT_ORDER = [
     "modify_color","modify_pattern","modify_shape","modify_material","modify_transparency",
-    "modify_spatial","modify_state","modify_presence","modify_cardinality",
+    "modify_spatial","modify_state","modify_presence","modify_count",
     "modify_action","modify_pose","modify_object",
     "swap_color","swap_material","swap_spatial","swap_role",
 ]
